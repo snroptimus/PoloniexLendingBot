@@ -1,0 +1,35 @@
+<html>
+<head>
+<title>Simple Ajax Example</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script language="Javascript">
+function RunPython(strURL) {
+    $.ajax({
+            type: 'POST',
+            url: "/cgi-bin/sample.py",
+            data: {param: "xyz"}, //passing some input here
+            dataType: "text",
+            success: function(response){
+            output = response;
+            alert(output);
+            }
+    }).done(function(data){
+        console.log(data);
+        alert(data);
+    });
+}
+
+</script>
+</head>
+
+<body>
+
+<form name="f1">
+  <p>word: <input name="word" type="text">  
+  <input value="Go" type="button" onclick='JavaScript:RunPython("/ajaxtest")'></p>
+  <div id="result"></div>
+</form>
+
+</body>
+
+</html>

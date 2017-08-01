@@ -20,39 +20,53 @@ def init(config, log1):
 
 
 def amount_to_lend(active_cur_test_balance, active_cur, lending_balance, low_rate):
+    print("\n____Active_Bal")
     restrict_lend = False
     active_bal = Decimal(0)
     log_data = str("")
     cur_max_to_lend_rate = max_to_lend_rate
     cur_max_to_lend =  max_to_lend
     cur_max_percent_to_lend = max_percent_to_lend
+
     if active_cur in coin_cfg:
         cur_max_to_lend_rate =  coin_cfg[active_cur]['maxtolendrate']
         cur_max_to_lend = coin_cfg[active_cur]['maxtolend']
         cur_max_percent_to_lend = coin_cfg[active_cur]['maxpercenttolend']
+        print("0")
     if cur_max_to_lend_rate == 0 and low_rate > 0 or cur_max_to_lend_rate >= low_rate > 0:
         log_data = ("The Lower Rate found on " + active_cur + " is " + str(
             "%.4f" % (Decimal(low_rate) * 100)) + "% vs conditional rate " + str(
             "%.4f" % (Decimal(cur_max_to_lend_rate) * 100)) + "%. ")
         restrict_lend = True
+        print("1")
+
     if cur_max_to_lend != 0 and restrict_lend:
         log.updateStatusValue(active_cur, "maxToLend", cur_max_to_lend)
         if lending_balance > (active_cur_test_balance - cur_max_to_lend):
             active_bal = (lending_balance - (active_cur_test_balance - cur_max_to_lend))
+        print("2")
     if cur_max_to_lend == 0 and cur_max_percent_to_lend != 0 and restrict_lend:
         log.updateStatusValue(active_cur, "maxToLend", (cur_max_percent_to_lend * active_cur_test_balance))
         if lending_balance > (active_cur_test_balance - (cur_max_percent_to_lend * active_cur_test_balance)):
             active_bal = (lending_balance - (active_cur_test_balance - (
                 cur_max_percent_to_lend * active_cur_test_balance)))
+        print("3")
     if cur_max_to_lend == 0 and cur_max_percent_to_lend == 0:
         log.updateStatusValue(active_cur, "maxToLend", active_cur_test_balance)
         active_bal = lending_balance
+        print("4")
     if not restrict_lend:
         log.updateStatusValue(active_cur, "maxToLend", active_cur_test_balance)
         active_bal = lending_balance
+        print("5")
     if (lending_balance - active_bal) < min_loan_size:
         active_bal = lending_balance
+        print("6")
     if active_bal < lending_balance:
         log.log(log_data + " Lending " + str("%.8f" % Decimal(active_bal)) + " of " + str(
             "%.8f" % Decimal(lending_balance)) + " Available")
+        print("7")
+    
+    print(active_bal)
+    print("____Active_Bal\n")
     return active_bal

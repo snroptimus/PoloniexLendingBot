@@ -106,6 +106,11 @@ class Logger(object):
             float(rate) * 100) + '% for ' + days + ' days... ' + self.digestApiMsg(msg)
         self.output.printline(line)
         self.refreshStatus()
+        
+    def lendspeed(self, amt ):
+        line = self.timestamp() + str(amt)
+        self.output.printline(line)
+        self.refreshStatus()
 
     def cancelOrders(self, cur, msg):
         line = self.timestamp() + ' Canceling all ' + str(cur) + ' orders... ' + self.digestApiMsg(msg)

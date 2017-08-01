@@ -1,4 +1,5 @@
 # coding=utf-8
+import datetime
 from decimal import Decimal
 import sched
 import time
@@ -290,6 +291,29 @@ def construct_order_book(active_cur):
         volume_book.append(offer['amount'])
     return {'rates': rate_book, 'volumes': volume_book}
 
+def getSupplyVolume(active_cur):
+    # make sure we have a request limit for this currency
+    if active_cur not in loanOrdersRequestLimit:
+        loanOrdersRequestLimit[active_cur] = defaultLoanOrdersRequestLimit
+
+    loans = api.return_loan_orders(active_cur, loanOrdersRequestLimit[active_cur])
+    if len(loans) == 0:
+        return False
+
+    rate_book = []
+    volume_book = []
+    volumeAmount = 0
+    for offer in loans['offers']:
+        rate_book.append(offer['rate'])
+        volume_book.append(offer['amount'])
+        volumeAmount += float(offer['amount'])
+        
+    ts = time.time()
+    f = open('www/botlogs/speedTest.json', 'a')
+    f.write("{\"date\":" + "\"" + datetime.datetime.fromtimestamp(ts).strftime('%a %b %d %Y %X %z') + "\", " + "\"value\":" + str(volumeAmount) + ", " + "\"volume\": 0" + "}, ")
+    f.close()
+#    print volume_book
+    return "OKOK"
 
 def get_gap_rate(active_cur, gap, order_book, cur_total_balance, raw=False):
     if raw:

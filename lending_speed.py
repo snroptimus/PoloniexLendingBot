@@ -87,7 +87,7 @@ try:
     while True:
         try:
             Lending.getSupplyVolume('BTC')
-            time.sleep(60)
+            time.sleep(1)
         except KeyboardInterrupt:
             # allow existing the main bot loop
             raise

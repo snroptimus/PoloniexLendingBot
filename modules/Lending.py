@@ -42,6 +42,8 @@ testVal = 0
 loanOrdersRequestLimit = {}
 defaultLoanOrdersRequestLimit = 100
 
+prev_offerBook = []
+prev_rateBook = []
 
 def init(cfg, api1, log1, data, maxtolend, dry_run1, analysis, notify_conf1):
     global Config, api, log, Data, MaxToLend, Analysis, notify_conf
@@ -293,25 +295,70 @@ def construct_order_book(active_cur):
 
 def getSupplyVolume(active_cur):
     # make sure we have a request limit for this currency
+    global prev_offerBook
+    global prev_rateBook
     if active_cur not in loanOrdersRequestLimit:
-        loanOrdersRequestLimit[active_cur] = defaultLoanOrdersRequestLimit
+#        loanOrdersRequestLimit[active_cur] = defaultLoanOrdersRequestLimit
+        loanOrdersRequestLimit[active_cur] = 10000
 
     loans = api.return_loan_orders(active_cur, loanOrdersRequestLimit[active_cur])
     if len(loans) == 0:
         return False
 
+
     rate_book = []
     volume_book = []
     volumeAmount = 0
+    goodRate = 0
+    matchedCount = 0
+
+    
     for offer in loans['offers']:
+        curRate = offer['rate']
+        curAmount = offer['amount']
+
         rate_book.append(offer['rate'])
         volume_book.append(offer['amount'])
-        volumeAmount += float(offer['amount'])
+#        volumeAmount += float(offer['amount'])
         
+        if len(prev_offerBook) != 0:
+            if goodRate == 0:
+                matchedCount = 0
+                volumeAmount = 0
+                for prevRate in prev_rateBook:
+        #        unmatchedBook = list(set(prev_offerBook) & set(volume_book))
+                    if curRate == prevRate:
+                        goodRate = curRate
+                        break
+                    if curRate < prevRate:
+                        break
+                    volumeAmount += float(prev_offerBook[matchedCount])
+                    matchedCount += 1
+    
+    
+    goodRate = float(goodRate)
+    goodRate *= 100
+    
+    ts = time.time()
+    print (datetime.datetime.fromtimestamp(ts).strftime('%a %b %d %Y %X %z'))
+    print(goodRate)
+    print(matchedCount)
+    print(volumeAmount)
+    
+    
     ts = time.time()
     f = open('www/botlogs/speedTest.json', 'a')
-    f.write("{\"date\":" + "\"" + datetime.datetime.fromtimestamp(ts).strftime('%a %b %d %Y %X %z') + "\", " + "\"value\":" + str(volumeAmount) + ", " + "\"volume\": 0" + "}, ")
+    print("Total:")
+    print(volumeAmount)
+    print("\n\n")
+    f.write("{\"date\":" + "\"" + datetime.datetime.fromtimestamp(ts).strftime('%a %b %d %Y %X %z') + "\", " + "\"value\":" + str(goodRate) + ", " + "\"volume\":" + str(volumeAmount) + "}, ")
     f.close()
+    
+    
+    prev_offerBook = volume_book
+    prev_rateBook = rate_book
+#    print(prev_offerBook)
+    
 #    print volume_book
     return "OKOK"
 

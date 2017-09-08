@@ -340,6 +340,7 @@ def getSupplyVolume(active_cur):
     goodRate *= 100
     
     ts = time.time()
+    print("Poloniex")
     print (datetime.datetime.fromtimestamp(ts).strftime('%a %b %d %Y %X %z'))
     print(goodRate)
     print(matchedCount)
